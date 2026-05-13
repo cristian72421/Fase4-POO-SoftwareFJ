@@ -177,6 +177,55 @@ class AsesoriaEspecializada(Servicio):
 
 
 # ==========================================
+# 7. CLASE RESERVA (Integración)
+# ==========================================
+class Reserva(EntidadGeneral):
+    """
+    Integra cliente, servicio, duración y maneja el estado de la reserva.
+    """
+    def __init__(self, id_entidad, cliente, servicio, duracion_medida):
+        super().__init__(id_entidad)
+        self.cliente = cliente
+        self.servicio = servicio
+        self.duracion_medida = duracion_medida  # Horas, días o sesiones, dependiendo del servicio
+        self.estado = "Pendiente" # Estados posibles: Pendiente, Confirmada, Cancelada
+
+    def confirmar(self):
+        try:
+            if self.estado == "Confirmada":
+                raise OperacionNoPermitidaError("La reserva ya se encuentra confirmada.")
+            if self.estado == "Cancelada":
+                raise OperacionNoPermitidaError("No se puede confirmar una reserva que fue cancelada.")
+            self.estado = "Confirmada"
+            return f"Reserva {self._id_entidad} confirmada con éxito."
+        except OperacionNoPermitidaError as e:
+            logger.error(f"Error al confirmar reserva {self._id_entidad}: {e}")
+            raise
+
+    def cancelar(self):
+        try:
+            if self.estado == "Cancelada":
+                raise OperacionNoPermitidaError("La reserva ya se encontraba cancelada.")
+            self.estado = "Cancelada"
+            return f"Reserva {self._id_entidad} cancelada con éxito."
+        except OperacionNoPermitidaError as e:
+            logger.error(f"Error al cancelar reserva {self._id_entidad}: {e}")
+            raise
+
+    def mostrar_detalles(self):
+        # Usamos la abstracción de la clase Servicio para calcular el costo base
+        try:
+            costo = self.servicio.calcular_costo(self.duracion_medida)
+            return (f"--- Detalles Reserva ID: {self._id_entidad} ---\n"
+                    f"Estado: {self.estado}\n"
+                    f"Cliente: {self.cliente.obtener_nombre()} ({self.cliente.obtener_correo()})\n"
+                    f"Servicio: {self.servicio.nombre_servicio}\n"
+                    f"Costo Total: ${costo}\n"
+                    f"----------------------------------")
+        except DatoInvalidoError:
+            return f"Reserva {self._id_entidad}: Error al calcular el costo por datos inválidos en la duración."
+
+# ==========================================
 # BLOQUE DE PRUEBA SECUENCIAL
 # ==========================================
 if __name__ == "__main__":
