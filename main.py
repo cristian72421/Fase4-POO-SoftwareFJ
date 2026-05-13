@@ -228,34 +228,100 @@ class Reserva(EntidadGeneral):
 # ==========================================
 # BLOQUE DE PRUEBA SECUENCIAL
 # ==========================================
+# ==========================================
+# 8. SIMULACIÓN DE 10 OPERACIONES (Requisito Fase 4)
+# ==========================================
 if __name__ == "__main__":
-    print("--- INICIANDO PRUEBAS DEL SISTEMA ---")
-    
+    print("\n" + "="*50)
+    print("INICIANDO SIMULACIÓN DE 10 OPERACIONES")
+    print("="*50 + "\n")
+
+    # Listas para simular nuestra "Base de Datos" en memoria sin usar motores externos
+    clientes_db = []
+    servicios_db = []
+    reservas_db = []
+
+    # Op 1: Registro válido de cliente
     try:
-        # 1. Prueba de Cliente
-        cliente_valido = Cliente("C001", "Ana Gomez", "ana@ejemplo.com")
-        print("[OK]", cliente_valido.mostrar_detalles())
+        c1 = Cliente("C001", "Carlos Perez", "carlos@mail.com")
+        clientes_db.append(c1)
+        print("Op 1 [Éxito]: Cliente registrado ->", c1.obtener_nombre())
+    except Exception as e:
+        print("Op 1 [Error no controlado]:", e)
 
-        # 2. Prueba de Servicios (Polimorfismo)
-        sala = ReservaSala("S001", 10)
-        equipo = AlquilerEquipo("E001", "Proyector 4K")
-        asesoria = AsesoriaEspecializada("A001", "Seguridad Informática")
+    # Op 2: Registro inválido de cliente (Falta el arroba en el correo)
+    try:
+        c2 = Cliente("C002", "Ana", "correo_sin_arroba.com")
+        clientes_db.append(c2)
+    except DatoInvalidoError as e:
+        print("Op 2 [Fallo Controlado]: No se pudo crear cliente ->", e)
 
-        print("\n--- SERVICIOS DISPONIBLES ---")
-        for servicio in [sala, equipo, asesoria]:
-            print(f"- {servicio.describir_servicio()}")
+    # Op 3: Creación correcta de servicio de sala
+    try:
+        s1 = ReservaSala("S001", capacidad_personas=20)
+        servicios_db.append(s1)
+        print("Op 3 [Éxito]: Servicio creado ->", s1.nombre_servicio)
+    except Exception as e:
+        print("Op 3 [Error no controlado]:", e)
 
-        # 3. Prueba de Sobrecarga (Diferentes variantes de cálculo)
-        print("\n--- CÁLCULO DE COSTOS SOBRECARGADOS ---")
-        print(f"Costo Sala (3 horas, 19% IVA, 10% Descuento): ${sala.calcular_costo(horas=3, impuesto=0.19, descuento=0.10)}")
-        print(f"Costo Alquiler Equipo (2 días, sin seguro): ${equipo.calcular_costo(dias=2)}")
-        
-        # 4. Error forzado para probar logs
-        print("\n--- FORZANDO ERROR DE CÁLCULO ---")
-        sala.calcular_costo(horas=-5) # Esto lanzará excepción
+    # Op 4: Creación correcta de servicio de equipo
+    try:
+        s2 = AlquilerEquipo("E001", tipo_equipo="Proyector 4K y Sonido")
+        servicios_db.append(s2)
+        print("Op 4 [Éxito]: Servicio creado ->", s2.nombre_servicio)
+    except Exception as e:
+        print("Op 4 [Error no controlado]:", e)
 
-    except SistemaGestionError as error:
-        print(f"[X] Excepción capturada en ejecución: {error}")
-        print("    (Revisa 'sistema_errores.log')")
-    finally:
-        print("\n-> Ejecución de pruebas finalizada.")
+    # Op 5: Reserva exitosa (Carlos alquila la sala por 4 horas)
+    try:
+        r1 = Reserva("R001", clientes_db[0], servicios_db[0], duracion_medida=4)
+        reservas_db.append(r1)
+        print("Op 5 [Éxito]: Reserva creada en estado ->", r1.estado)
+    except Exception as e:
+        print("Op 5 [Error no controlado]:", e)
+
+    # Op 6: Reserva fallida en cálculo (se envía una duración negativa)
+    try:
+        r2 = Reserva("R002", clientes_db[0], servicios_db[1], duracion_medida=-2)
+        # El error detonará al intentar calcular el costo con días negativos
+        print("Op 6 [Fallo Controlado]:", r2.mostrar_detalles())
+    except Exception as e:
+        print("Op 6 [Error]:", e)
+
+    # Op 7: Confirmación exitosa de reserva
+    try:
+        msg = reservas_db[0].confirmar()
+        print("Op 7 [Éxito]:", msg)
+    except Exception as e:
+        print("Op 7 [Error no controlado]:", e)
+
+    # Op 8: Confirmación fallida (Se intenta confirmar la reserva que YA está confirmada)
+    try:
+        msg = reservas_db[0].confirmar()
+        print("Op 8 [Éxito]:", msg)
+    except OperacionNoPermitidaError as e:
+        print("Op 8 [Fallo Controlado]:", e)
+
+    # Op 9: Cancelación exitosa (Creamos una nueva reserva rápida solo para cancelarla)
+    try:
+        r3 = Reserva("R003", clientes_db[0], servicios_db[0], duracion_medida=1)
+        reservas_db.append(r3)
+        msg = r3.cancelar()
+        print("Op 9 [Éxito]:", msg)
+    except Exception as e:
+        print("Op 9 [Error no controlado]:", e)
+
+    # Op 10: Cancelación fallida (Se intenta cancelar la reserva que YA está cancelada)
+    try:
+        msg = r3.cancelar()
+        print("Op 10 [Éxito]:", msg)
+    except OperacionNoPermitidaError as e:
+        print("Op 10 [Fallo Controlado]:", e)
+
+    print("\n" + "="*50)
+    print("RESUMEN DE DATOS EN MEMORIA")
+    print("="*50)
+    print(f"Total Clientes válidos en lista: {len(clientes_db)}")
+    print(f"Total Servicios válidos en lista: {len(servicios_db)}")
+    print(f"Total Reservas creadas en lista: {len(reservas_db)}")
+    print("\nEl programa ejecutó todas las operaciones y manejó los errores sin detenerse.")
