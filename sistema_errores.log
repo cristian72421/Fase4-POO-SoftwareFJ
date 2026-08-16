@@ -1,1 +1,5 @@
 2026-05-12 23:23:52,108 - ERROR - Error al calcular costo en Reserva de Sala de Reuniones: Las horas de reserva deben ser mayores a cero.
+2026-05-12 23:30:13,118 - ERROR - Error al asignar correo al cliente C002: El correo proporcionado no tiene un formato válido.
+2026-05-12 23:30:13,118 - ERROR - Error al calcular costo en Alquiler de Equipo Computacional: Los días de alquiler deben ser mayores a cero.
+2026-05-12 23:30:13,118 - ERROR - Error al confirmar reserva R001: La reserva ya se encuentra confirmada.
+2026-05-12 23:30:13,119 - ERROR - Error al cancelar reserva R003: La reserva ya se encontraba cancelada.
